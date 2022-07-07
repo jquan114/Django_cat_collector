@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.views.generic.edit import CreateView
 from .models import Cat
+from .forms import FeedingForm
+from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 # Create your views here.
@@ -29,7 +31,22 @@ def cats_index(request):
 
 def cats_detail(request, cat_id):
   cat = Cat.objects.get(id=cat_id)
-  return render(request, 'cats/detail.html', { 'cat': cat })
+  # instantiate FeedingForm to be rendered in the template
+  feeding_form = FeedingForm()
+  return render(request, 'cats/detail.html', {
+     'cat': cat, 'feeding_form': feeding_form 
+    })
+
+def add_feeding(request, cat_id):
+    form = FeedingForm(request.POST)
+    #validate the form
+    if form.is_valid():
+        # dont save the form to the db until is
+        #h has the cat_id assigned
+        new_feeding = form.save(commit=False)
+        new_feeding.cat_id = cat_id
+        new_feeding.save()
+    return redirect('detail',cat_id=cat_id)
 
 #the cud in crud
 class CatCreate(CreateView):
